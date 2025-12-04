@@ -1,0 +1,4 @@
+[check]
+ignore = [
+  "C003", # `implicit none` missing `external`
+]
