@@ -1,15 +1,15 @@
 program test_bitrep
   use iso_fortran_env, only: dp => real64, int64
-  use bitrep, only: br_sin, br_cos, br_exp
+  use bitrep, only: br_sin, br_cos, br_exp, br_log
   implicit none
 
   integer, parameter :: n = 10000
 
-  real(kind=dp), parameter :: x1_sin = -5._dp, x1_cos = -5._dp, x1_exp = -5._dp
-  real(kind=dp), parameter :: x2_sin = +5._dp, x2_cos = +5._dp, x2_exp = +5._dp
+  real(kind=dp), parameter :: x1_sin = -5._dp, x1_cos = -5._dp, x1_exp = -5._dp, x1_log = 0.001_dp
+  real(kind=dp), parameter :: x2_sin = +5._dp, x2_cos = +5._dp, x2_exp = +5._dp, x2_log = 1000._dp
   real(kind=dp) :: x1, x2
-  real(kind=dp) :: x_sin(n), x_cos(n), x_exp(n)
-  real(kind=dp) :: y_sin(n, 4), y_cos(n, 4), y_exp(n, 4)
+  real(kind=dp) :: x_sin(n), x_cos(n), x_exp(n), x_log(n)
+  real(kind=dp) :: y_sin(n, 4), y_cos(n, 4), y_exp(n, 4), y_log(n, 4)
 
   integer :: i
 
@@ -21,6 +21,7 @@ program test_bitrep
     x_sin(i) = x1_sin * x1 + x2_sin * x2
     x_cos(i) = x1_cos * x1 + x2_cos * x2
     x_exp(i) = x1_exp * x1 + x2_exp * x2
+    x_log(i) = x1_log * x1 + x2_log * x2
   end do
 
   !$acc data copyin (x_sin, x_cos, x_exp) &
@@ -31,12 +32,14 @@ program test_bitrep
     y_sin(i, 1) = sin(x_sin(i))
     y_cos(i, 1) = cos(x_cos(i))
     y_exp(i, 1) = exp(x_exp(i))
+    y_log(i, 1) = log(x_log(i))
   end do
 
   do i = 1, n
     y_sin(i, 2) = br_sin(x_sin(i))
     y_cos(i, 2) = br_cos(x_cos(i))
     y_exp(i, 2) = br_exp(x_exp(i))
+    y_log(i, 2) = br_log(x_log(i))
   end do
   !$acc end serial
 
@@ -46,12 +49,14 @@ program test_bitrep
     y_sin(i, 3) = sin(x_sin(i))
     y_cos(i, 3) = cos(x_cos(i))
     y_exp(i, 3) = exp(x_exp(i))
+    y_log(i, 3) = log(x_log(i))
   end do
 
   do i = 1, n
     y_sin(i, 4) = br_sin(x_sin(i))
     y_cos(i, 4) = br_cos(x_cos(i))
     y_exp(i, 4) = br_exp(x_exp(i))
+    y_log(i, 4) = br_log(x_log(i))
   end do
 
   call compare_data(y_sin(:, 1), y_sin(:, 3), n, "GPU::sin", "CPU::sin", .false.)
@@ -65,6 +70,10 @@ program test_bitrep
   call compare_data(y_exp(:, 1), y_exp(:, 3), n, "GPU::exp", "CPU::exp", .false.)
   call compare_data(y_exp(:, 2), y_exp(:, 4), n, "GPU::br_exp", "CPU_br_exp", .false.)
   call compare_data(y_exp(:, 3), y_exp(:, 4), n, "CPU::exp", "CPU::br_exp", .false.)
+
+  call compare_data(y_log(:, 1), y_log(:, 3), n, "GPU::log", "CPU::log", .false.)
+  call compare_data(y_log(:, 2), y_log(:, 4), n, "GPU::br_log", "CPU_br_log", .false.)
+  call compare_data(y_log(:, 3), y_log(:, 4), n, "CPU::log", "CPU::br_log", .false.)
 
 contains
 
