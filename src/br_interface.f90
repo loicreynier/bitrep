@@ -5,7 +5,7 @@ module bitrep
   implicit none
 
   private
-  public :: br_sin, br_cos, br_exp, br_log
+  public :: br_sin, br_cos, br_exp, br_log, br_atan
 
 contains
 
@@ -80,5 +80,23 @@ contains
 
     br_log = br_log_c(real(x, kind=c_double))
   end function br_log
+
+  elemental function br_atan(x)
+    !$acc routine seq
+    real(kind=dp), intent(in) :: x
+    real(kind=dp) :: br_atan
+
+    interface
+      pure function br_atan_c(x_c) bind(c, name="br_atan")
+        !$acc routine seq
+        import c_double
+        implicit none
+        real(kind=c_double) :: br_atan_c
+        real(kind=c_double), value, intent(in) :: x_c
+      end function br_atan_c
+    end interface
+
+    br_atan = br_atan_c(real(x, kind=c_double))
+  end function br_atan
 
 end module bitrep
