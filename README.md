@@ -30,6 +30,11 @@ cd build
 # CPU::exp         vs CPU::br_exp      are NOT identical
 ```
 
+## Other implementations
+
+- [Original source by Andrea Arteaga](https://github.com/andyspiros/bitrep)
+- [GPU OpenACC port of transcendental functions by Philippe Wautelet](https://github.com/pmarguinaud/bitrep)
+
 ## Reference
 
 ```bibtex
