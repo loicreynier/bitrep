@@ -60,19 +60,19 @@ program test_bitrep
   end do
 
   call compare_data(y_sin(:, 1), y_sin(:, 3), n, "GPU::sin", "CPU::sin", .false.)
-  call compare_data(y_sin(:, 2), y_sin(:, 4), n, "GPU::br_sin", "CPU_br_sin", .false.)
+  call compare_data(y_sin(:, 2), y_sin(:, 4), n, "GPU::br_sin", "CPU::br_sin", .false.)
   call compare_data(y_sin(:, 3), y_sin(:, 4), n, "CPU::sin", "CPU::br_sin", .false.)
 
   call compare_data(y_cos(:, 1), y_cos(:, 3), n, "GPU::cos", "CPU::cos", .false.)
-  call compare_data(y_cos(:, 2), y_cos(:, 4), n, "GPU::br_cos", "CPU_br_cos", .false.)
+  call compare_data(y_cos(:, 2), y_cos(:, 4), n, "GPU::br_cos", "CPU::br_cos", .false.)
   call compare_data(y_cos(:, 3), y_cos(:, 4), n, "CPU::cos", "CPU::br_cos", .false.)
 
   call compare_data(y_exp(:, 1), y_exp(:, 3), n, "GPU::exp", "CPU::exp", .false.)
-  call compare_data(y_exp(:, 2), y_exp(:, 4), n, "GPU::br_exp", "CPU_br_exp", .false.)
+  call compare_data(y_exp(:, 2), y_exp(:, 4), n, "GPU::br_exp", "CPU::br_exp", .false.)
   call compare_data(y_exp(:, 3), y_exp(:, 4), n, "CPU::exp", "CPU::br_exp", .false.)
 
   call compare_data(y_log(:, 1), y_log(:, 3), n, "GPU::log", "CPU::log", .false.)
-  call compare_data(y_log(:, 2), y_log(:, 4), n, "GPU::br_log", "CPU_br_log", .false.)
+  call compare_data(y_log(:, 2), y_log(:, 4), n, "GPU::br_log", "CPU::br_log", .false.)
   call compare_data(y_log(:, 3), y_log(:, 4), n, "CPU::log", "CPU::br_log", .false.)
 
 contains

@@ -20,13 +20,13 @@ cd build
 ./test-bitrep
 # Output:
 # GPU::sin         vs CPU::sin         are NOT identical
-# GPU::br_sin      vs CPU_br_sin       are identical
+# GPU::br_sin      vs CPU::br_sin       are identical
 # CPU::sin         vs CPU::br_sin      are NOT identical
 # GPU::cos         vs CPU::cos         are NOT identical
-# GPU::br_cos      vs CPU_br_cos       are identical
+# GPU::br_cos      vs CPU::br_cos       are identical
 # CPU::cos         vs CPU::br_cos      are NOT identical
 # GPU::exp         vs CPU::exp         are NOT identical
-# GPU::br_exp      vs CPU_br_exp       are identical
+# GPU::br_exp      vs CPU::br_exp       are identical
 # CPU::exp         vs CPU::br_exp      are NOT identical
 ```
 
