@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 
 project(bitrep LANGUAGES Fortran CXX)
 
-option(BUILD_TESTS "Whether to build tests" ON)
+option(BUILD_TESTINGS "Whether to build tests" ON)
 
 # -- Library ---------------------------------------------------------------------------------------
 
@@ -31,7 +31,7 @@ install(TARGETS bitrep)
 
 # -- Tests ------------------------------------------------------------------------------------------
 
-if(BUILD_TESTS)
+if(BUILD_TESTINGS)
   enable_testing()
 
   add_executable(test_bitrep tests/test_bitrep.f90)

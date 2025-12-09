@@ -15,7 +15,7 @@ The following will build a static library `libbitrep.a` and a test binary that w
 if identical result are obtained both on the CPU and the GPU (see `./tests/test_bitrep.f90`).
 
 ```bash
-cmake -B build -S . -DCMAKE_VERBOSE_MAKEFILE=ON # -DBUILD_TESTS=OFF
+cmake -B build -S . -DCMAKE_VERBOSE_MAKEFILE=ON # -DBUILD_TESTINGS=OFF
 cd build
 ./test-bitrep
 # Output:
