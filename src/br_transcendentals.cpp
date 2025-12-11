@@ -57,9 +57,13 @@ static const double __sin_cos_coefficient[16] = {
  * FORWARD DECLARATION OF SOME FUNCTIONS *
  *****************************************/
 
+#pragma acc routine seq
 double __internal_exp_kernel(double x, int scale);
+#pragma acc routine seq
 double __internal_expm1_kernel(double x);
+#pragma acc routine seq
 double log1p(double);
+#pragma acc routine seq
 double log(double);
 
 /********************
