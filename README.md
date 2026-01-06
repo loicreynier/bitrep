@@ -15,7 +15,7 @@ The following will build a static library `libbitrep.a` and a test binary that w
 if identical result are obtained both on the CPU and the GPU (see `./tests/test_bitrep.f90`).
 
 ```bash
-cmake -B build -S . -DCMAKE_VERBOSE_MAKEFILE=ON # -DBUILD_TESTINGS=OFF
+cmake -B build -S . -DCMAKE_VERBOSE_MAKEFILE=ON # -DBUILD_TESTINGS=OFF -DCUDA_CC=cc70
 cd build
 ./test-bitrep
 # Output:
@@ -29,6 +29,9 @@ cd build
 # GPU::br_exp      vs CPU::br_exp      are identical
 # CPU::exp         vs CPU::br_exp      are NOT identical
 ```
+
+On NVHPC, specifying the CUDA compute capability (e.g. `cc70` for Volta GPUs) may be necessary
+when bulding fails to generate code for all capabilities.
 
 ## Other implementations
 

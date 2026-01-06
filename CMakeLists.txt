@@ -4,6 +4,8 @@ project(bitrep LANGUAGES Fortran CXX)
 
 option(BUILD_TESTINGS "Whether to build tests" ON)
 
+set(CUDA_CC "" CACHE STRING "CUDA Compute Capability for NVHPC compiler (leave empty to skip)")
+
 # -- Library ---------------------------------------------------------------------------------------
 
 add_library(bitrep STATIC
@@ -21,6 +23,20 @@ target_compile_options(bitrep PRIVATE
   $<$<COMPILE_LANGUAGE:Fortran>:-O0>
   $<$<COMPILE_LANGUAGE:CXX>:-O0>
 )
+
+if(CMAKE_Fortran_COMPILER_ID STREQUAL "NVHPC")
+  set(NVHPC_FLAGS -Kieee -Mnofma)
+
+  if(CUDA_CC)
+    list(APPEND NVHPC_FLAGS "-gpu=${CUDA_CC}")
+  else()
+  endif()
+
+  target_compile_options(bitrep PRIVATE
+    $<$<COMPILE_LANGUAGE:Fortran>:${NVHPC_FLAGS}>
+    $<$<COMPILE_LANGUAGE:CXX>:${NVHPC_FLAGS}>
+  )
+endif()
 
 find_package(OpenACC REQUIRED)
 target_link_libraries(bitrep PUBLIC
@@ -41,3 +57,4 @@ if(BUILD_TESTINGS)
 
   add_test(NAME bitrep_test COMMAND test_bitrep)
 endif()
+
