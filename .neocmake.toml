@@ -1,2 +1,2 @@
-command_upcase = "upcase"
+command_upcase = "lower_case"
 line_max_words = 100
