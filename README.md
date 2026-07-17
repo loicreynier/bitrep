@@ -5,13 +5,21 @@ ported to GPU through OpenACC and with a Fortran interface.
 
 Bit-reproductible results have been tested on:
 
-- NVHPC 25.3 compiler: CPU ARM vs GPU NVIDIA A100 @ [HPCC Turpan (CALMIP)][Turpan]
-- NVHPC 26.1 compiler: NVIDIA GH200 superchip @ [HPCC Kairos (CALMIP)][Kairos]
+- CPU x86 Intel vs GPU NVIDIA V100 @ [Olympe (CALMIP)][Olympe]:
+  - PGI 19.10 compiler
+  - NVIDIA HPC SDK 22.7 compiler
+- CPU ARM vs GPU NVIDIA A100 @ [Turpan (CALMIP)][Turpan]: NVIDIA HPC SDK 25.3 compiler
+- NVIDIA GH200 superchip @ [Kairos (CALMIP)][Kairos]: NVIDIA HPC SDK 26.1 compiler
 
+[Olympe]: https://www.calmip.univ-toulouse.fr/espace-utilisateurs/doc-technique-olympe
 [Turpan]: https://www.calmip.univ-toulouse.fr/espace-utilisateurs/doc-technique-turpan
 [Kairos]: https://www.calmip.univ-toulouse.fr/espace-utilisateurs/documentation-technique-kairos
 
 ## Build instructions
+
+> [!NOTE]
+> `bitrep` can be built as a static library with the CMake build system.
+> However it's probably easier to copy the two source files (see `./src`) in your project.
 
 The following will build a static library `libbitrep.a` and a test binary that will test
 if identical result are obtained both on the CPU and the GPU (see `./tests/test_bitrep.f90`).
