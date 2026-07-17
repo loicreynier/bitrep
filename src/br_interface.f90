@@ -1,3 +1,9 @@
+#if defined(BITREP_USE_OPENACC)
+#define __BITREP_DEVFUN $acc routine seq
+#elif defined(BITREP_USE_OPENMP)
+#define __BITREP_DEVFUN $omp declare target
+#endif
+
 module bitrep
 
   use, intrinsic :: iso_c_binding, only: c_double
@@ -10,13 +16,13 @@ module bitrep
 contains
 
   elemental function br_sin(x)
-    !$acc routine seq
+!__BITREP_DEVFUN
     real(kind=dp), intent(in) :: x
     real(kind=dp) :: br_sin
 
     interface
       pure function br_sin_c(x_c) bind(c, name="br_sin")
-        !$acc routine seq
+!__BITREP_DEVFUN
         import c_double
         implicit none
         real(kind=c_double) :: br_sin_c
@@ -28,13 +34,13 @@ contains
   end function br_sin
 
   elemental function br_cos(x)
-    !$acc routine seq
+!__BITREP_DEVFUN
     real(kind=dp), intent(in) :: x
     real(kind=dp) :: br_cos
 
     interface
       pure function br_cos_c(x_c) bind(c, name="br_cos")
-        !$acc routine seq
+!__BITREP_DEVFUN
         import c_double
         implicit none
         real(kind=c_double) :: br_cos_c
@@ -46,13 +52,13 @@ contains
   end function br_cos
 
   elemental function br_exp(x)
-    !$acc routine seq
+!__BITREP_DEVFUN
     real(kind=dp), intent(in) :: x
     real(kind=dp) :: br_exp
 
     interface
       pure function br_exp_c(x_c) bind(c, name="br_exp")
-        !$acc routine seq
+!__BITREP_DEVFUN
         import c_double
         implicit none
         real(kind=c_double) :: br_exp_c
@@ -64,13 +70,13 @@ contains
   end function br_exp
 
   elemental function br_log(x)
-    !$acc routine seq
+!__BITREP_DEVFUN
     real(kind=dp), intent(in) :: x
     real(kind=dp) :: br_log
 
     interface
       pure function br_log_c(x_c) bind(c, name="br_log")
-        !$acc routine seq
+!__BITREP_DEVFUN
         import c_double
         implicit none
         real(kind=c_double) :: br_log_c
@@ -82,13 +88,13 @@ contains
   end function br_log
 
   elemental function br_atan(x)
-    !$acc routine seq
+!__BITREP_DEVFUN
     real(kind=dp), intent(in) :: x
     real(kind=dp) :: br_atan
 
     interface
       pure function br_atan_c(x_c) bind(c, name="br_atan")
-        !$acc routine seq
+!__BITREP_DEVFUN
         import c_double
         implicit none
         real(kind=c_double) :: br_atan_c

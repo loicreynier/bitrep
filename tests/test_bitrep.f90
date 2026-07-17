@@ -1,7 +1,6 @@
 program test_bitrep
 
   use, intrinsic :: iso_fortran_env, only: dp => real64, int64
-  use openacc, only: acc_device_kind, acc_device_host, acc_get_device_type, acc_get_num_devices
   use bitrep, only: br_sin, br_cos, br_exp, br_log, br_atan
 
   implicit none
@@ -35,10 +34,18 @@ program test_bitrep
     x_atan(i) = x1_atan*x1 + x2_atan*x2
   end do
 
+#if defined(BITREP_USE_OPENACC)
   !$acc data copyin (x_sin, x_cos, x_exp, x_log, x_atan) &
-  !$acc    & copyout(y_sin(:,1:2), y_cos(:,1:2), y_exp(:,1:2), y_atan(:,1:2))
+  !$acc    & copyout(y_sin(:,1:2), y_cos(:,1:2), y_exp(:,1:2), y_log(:,1:2), y_atan(:,1:2))
 
   !$acc serial
+#elif defined(BITREP_USE_OPENMP)
+  !$omp target data map(to: x_sin, x_cos, x_exp, x_log, x_atan) &
+  !$omp           & map(from: y_sin(:,1:2), y_cos(:,1:2), y_exp(:,1:2), y_log(:,1:2), y_atan(:,1:2))
+
+  !$omp target
+#endif
+
   do i = 1, n
     y_sin(i, 1) = sin(x_sin(i))
     y_cos(i, 1) = cos(x_cos(i))
@@ -54,9 +61,16 @@ program test_bitrep
     y_log(i, 2) = br_log(x_log(i))
     y_atan(i, 2) = br_atan(x_atan(i))
   end do
+
+#if defined(BITREP_USE_OPENACC)
   !$acc end serial
 
   !$acc end data
+#else defined(BITREP_USE_OPENMP)
+  !$omp end target
+
+  !$omp end target data
+#endif
 
   do i = 1, n
     y_sin(i, 3) = sin(x_sin(i))
@@ -125,28 +139,49 @@ program test_bitrep
 contains
 
   ! ffmt off
-  !> @brief Detect whether a usable GPU is available for OpenACC offload using OpenACC API.
+  !> @brief Detect whether a usable GPU is available for offload using OpenACC/OpenMP API.
   !>
-  !> @param[out] available  `.true.` if at least one non-host OpenACC device is detected.
+  !> @param[out] available  `.true.` if at least one non-host offload device is detected.
   ! ffmt on
   subroutine check_gpu_available(available)
 
+#if defined(BITREP_USE_OPENACC)
+    use openacc, only: acc_device_kind, acc_device_host, acc_get_device_type, acc_get_num_devices
+#elif defined(BITREP_USE_OPENMP)
+    use omp_lib, only: omp_get_num_devices
+#endif
+
     logical, intent(out)     :: available
     integer                  :: num_devices
+
+#if defined(BITREP_USE_OPENACC)
     integer(acc_device_kind) :: dev_type
 
     dev_type = acc_get_device_type()
     num_devices = acc_get_num_devices(dev_type)
-
     available = (num_devices > 0) .and. (dev_type /= acc_device_host)
 
     write (*, "(A,I0)") "[INFO] Number of OpenACC devices detected: ", num_devices
-
     if (dev_type == acc_device_host) then
       write (*, "(A)") "[INFO] Device kind: host (CPU fallback, no GPU offload)"
     else
       write (*, "(A,I0)") "[INFO] Device kind (`acc_device_kind` code): ", dev_type
     end if
+
+#elif defined(BITREP_USE_OPENMP)
+
+    num_devices = omp_get_num_devices()
+    available = (num_devices > 0)
+
+    write (*, "(A,I0)") "[INFO] Number of OpenMP target devices detected: ", num_devices
+    if (.not. available) then
+      write (*, "(A)") "[INFO] Device kind: host (CPU fallback, no GPU offload)"
+    end if
+
+#else
+    available = .false.
+    write (*, "(A)") "[INFO] Built without OpenACC/OpenMP support: CPU fallback, no GPU offload"
+#endif
 
   end subroutine check_gpu_available
 

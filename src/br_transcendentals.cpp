@@ -61,6 +61,8 @@ double __internal_expm1_kernel(double x);
 double log1p(double);
 double log(double);
 
+#pragma omp declare target
+
 /********************
  * HELPER FUNCTIONS *
  ********************/
@@ -884,10 +886,13 @@ double exp(double x) {
   return t;
 }
 
+#pragma omp end declare target
+
 } // End of namespace bitrep
 
 // Implement C interface
 extern "C" {
+#pragma omp declare target
 #pragma acc routine seq
 double br_sin(double x) { return bitrep::sin(x); }
 #pragma acc routine seq
@@ -918,4 +923,5 @@ double br_log(double x) { return bitrep::log(x); }
 double br_log1p(double x) { return bitrep::log1p(x); }
 #pragma acc routine seq
 double br_exp(double x) { return bitrep::exp(x); }
+#pragma omp end declare target
 }
