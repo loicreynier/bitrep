@@ -2,5 +2,6 @@ cpp
 fortran
 hpc
 openacc
+openmp
 reproducible
 transcendental

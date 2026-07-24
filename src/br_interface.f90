@@ -1,3 +1,9 @@
+#if defined(_NVCOMPILER) || defined(__NVCOMPILER)
+#define OMP_NVHPC_DECLARE_TARGET !$omp declare target
+#else
+#define OMP_NVHPC_DECLARE_TARGET
+#endif
+
 module bitrep
 
   use, intrinsic :: iso_c_binding, only: c_double
@@ -10,12 +16,14 @@ module bitrep
 contains
 
   elemental function br_sin(x)
+    !$omp declare target
     !$acc routine seq
     real(kind=dp), intent(in) :: x
     real(kind=dp) :: br_sin
 
     interface
       pure function br_sin_c(x_c) bind(c, name="br_sin")
+        OMP_NVHPC_DECLARE_TARGET
         !$acc routine seq
         import c_double
         implicit none
@@ -28,12 +36,14 @@ contains
   end function br_sin
 
   elemental function br_cos(x)
+    !$omp declare target
     !$acc routine seq
     real(kind=dp), intent(in) :: x
     real(kind=dp) :: br_cos
 
     interface
       pure function br_cos_c(x_c) bind(c, name="br_cos")
+        OMP_NVHPC_DECLARE_TARGET
         !$acc routine seq
         import c_double
         implicit none
@@ -46,12 +56,14 @@ contains
   end function br_cos
 
   elemental function br_exp(x)
+    !$omp declare target
     !$acc routine seq
     real(kind=dp), intent(in) :: x
     real(kind=dp) :: br_exp
 
     interface
       pure function br_exp_c(x_c) bind(c, name="br_exp")
+        OMP_NVHPC_DECLARE_TARGET
         !$acc routine seq
         import c_double
         implicit none
@@ -64,12 +76,14 @@ contains
   end function br_exp
 
   elemental function br_log(x)
+    !$omp declare target
     !$acc routine seq
     real(kind=dp), intent(in) :: x
     real(kind=dp) :: br_log
 
     interface
       pure function br_log_c(x_c) bind(c, name="br_log")
+        OMP_NVHPC_DECLARE_TARGET
         !$acc routine seq
         import c_double
         implicit none
@@ -82,12 +96,14 @@ contains
   end function br_log
 
   elemental function br_atan(x)
+    !$omp declare target
     !$acc routine seq
     real(kind=dp), intent(in) :: x
     real(kind=dp) :: br_atan
 
     interface
       pure function br_atan_c(x_c) bind(c, name="br_atan")
+        OMP_NVHPC_DECLARE_TARGET
         !$acc routine seq
         import c_double
         implicit none
@@ -100,3 +116,4 @@ contains
   end function br_atan
 
 end module bitrep
+
