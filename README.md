@@ -1,19 +1,24 @@
 # `bitrep` - Bit-reproductible math functions
 
 [Original source by Andrea Arteaga](https://github.com/andyspiros/bitrep),
-ported to GPU through OpenACC and with a Fortran interface.
+ported to GPU through OpenACC or OpenMP and with a Fortran interface.
 
 Bit-reproductible results have been tested on:
 
 - CPU x86 Intel vs GPU NVIDIA V100 @ [Olympe (CALMIP)][Olympe]:
-  - PGI 19.10 compiler
-  - NVIDIA HPC SDK 22.7 compiler
-- CPU ARM vs GPU NVIDIA A100 @ [Turpan (CALMIP)][Turpan]: NVIDIA HPC SDK 25.3 compiler
-- NVIDIA GH200 superchip @ [Kairos (CALMIP)][Kairos]: NVIDIA HPC SDK 26.1 compiler
+  - OpenACC & PGI 19.10 compiler
+  - OpenACC & NVIDIA HPC SDK 22.7 compiler
+- CPU ARM vs GPU NVIDIA A100 @ [Turpan (CALMIP)][Turpan]:
+    OpenACC/OpenMP & NVIDIA HPC SDK 25.3 compiler
+- NVIDIA GH200 superchip @ [Kairos (CALMIP)][Kairos]:
+    OpenACC/OpenMP NVIDIA HPC SDK 26.1 compiler
+- CPU AMD vs GPU AMD MI250X @ [Adastra (CINES)][Adastra]:
+    OpenMP & AMD Flang 19.0 compiler
 
 [Olympe]: https://www.calmip.univ-toulouse.fr/espace-utilisateurs/doc-technique-olympe
 [Turpan]: https://www.calmip.univ-toulouse.fr/espace-utilisateurs/doc-technique-turpan
 [Kairos]: https://www.calmip.univ-toulouse.fr/espace-utilisateurs/documentation-technique-kairos
+[Adastra]: https://dci.dci-gitlab.cines.fr/webextranet/index.html
 
 ## Build instructions
 
@@ -25,7 +30,7 @@ The following will build a static library `libbitrep.a` and a test binary that w
 if identical result are obtained both on the CPU and the GPU (see `./tests/test_bitrep.f90`).
 
 ```bash
-cmake -B build -S . -DCMAKE_VERBOSE_MAKEFILE=ON # -DBUILD_TESTINGS=OFF -DCUDA_CC=cc70
+cmake -B build -S . -DCMAKE_VERBOSE_MAKEFILE=ON -DOFFLOAD_MODEL=OPENACC # -DCUDA_CC=cc70
 cd build
 ./test_bitrep
 # Or with SLURM:
@@ -42,8 +47,11 @@ cd build
 # CPU::exp         vs CPU::br_exp      are NOT identical but within tolerance
 ```
 
-On NVHPC, specifying the CUDA compute capability (e.g. `cc70` for Volta GPUs) may be necessary
-when bulding fails to generate code for all capabilities.
+On NVHPC, specifying the CUDA compute capability with `-DCUDA_CC=<cc>` (e.g. `cc70` for Volta GPUs)
+may be necessary when building fails to generate code for all capabilities.
+
+On AMD's OpenMP, target achitecture must be specified with `-DAMD_GPU_ARCH=<arch>`
+(e.g. `gfx90a` for MI250X).
 
 ## Other implementations
 
