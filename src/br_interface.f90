@@ -1,3 +1,9 @@
+#if defined(_NVCOMPILER) || defined(__NVCOMPILER)
+#define OMP_NVHPC_DECLARE_TARGET !$omp declare target
+#else
+#define OMP_NVHPC_DECLARE_TARGET
+#endif
+
 module bitrep
 
   use, intrinsic :: iso_c_binding, only: c_double
@@ -17,7 +23,7 @@ contains
 
     interface
       pure function br_sin_c(x_c) bind(c, name="br_sin")
-        !$omp declare target
+        OMP_NVHPC_DECLARE_TARGET
         !$acc routine seq
         import c_double
         implicit none
@@ -37,7 +43,7 @@ contains
 
     interface
       pure function br_cos_c(x_c) bind(c, name="br_cos")
-        !$omp declare target
+        OMP_NVHPC_DECLARE_TARGET
         !$acc routine seq
         import c_double
         implicit none
@@ -57,7 +63,7 @@ contains
 
     interface
       pure function br_exp_c(x_c) bind(c, name="br_exp")
-        !$omp declare target
+        OMP_NVHPC_DECLARE_TARGET
         !$acc routine seq
         import c_double
         implicit none
@@ -77,7 +83,7 @@ contains
 
     interface
       pure function br_log_c(x_c) bind(c, name="br_log")
-        !$omp declare target
+        OMP_NVHPC_DECLARE_TARGET
         !$acc routine seq
         import c_double
         implicit none
@@ -97,7 +103,7 @@ contains
 
     interface
       pure function br_atan_c(x_c) bind(c, name="br_atan")
-        !$omp declare target
+        OMP_NVHPC_DECLARE_TARGET
         !$acc routine seq
         import c_double
         implicit none
@@ -110,3 +116,4 @@ contains
   end function br_atan
 
 end module bitrep
+
