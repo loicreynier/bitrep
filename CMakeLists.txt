@@ -36,11 +36,15 @@ install(TARGETS bitrep)
 if(BUILD_TESTINGS)
   enable_testing()
 
-  add_executable(test_bitrep tests/test_bitrep.f90)
+  add_executable(test_bitrep
+    tests/test_bitrep.f90
+    src/br_transcendentals.cpp
+    src/br_interface.f90
+  )
   set_source_files_properties(tests/test_bitrep.f90 PROPERTIES Fortran_PREPROCESS ON)
   set_target_properties(test_bitrep PROPERTIES LINKER_LANGUAGE Fortran)
   target_include_directories(test_bitrep PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/mod)
-  target_link_libraries(test_bitrep PRIVATE bitrep)
+  # target_link_libraries(test_bitrep PRIVATE bitrep)
 
   add_test(NAME bitrep_test COMMAND test_bitrep)
 endif()
