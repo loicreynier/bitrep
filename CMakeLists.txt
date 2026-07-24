@@ -5,6 +5,7 @@ project(bitrep LANGUAGES Fortran CXX)
 option(BUILD_TESTINGS "Whether to build tests" ON)
 
 set(CUDA_CC "" CACHE STRING "CUDA Compute Capability for NVHPC compiler (leave empty to skip)")
+set(AMD_GPU_ARCH "" CACHE STRING "AMD GPU architecture for OpenMP target (e.g. gfx90a, gfx908)")
 set(OFFLOAD_MODEL "OPENACC" CACHE STRING "GPU offload model: NONE, OPENACC, OPENMP")
 set_property(CACHE OFFLOAD_MODEL PROPERTY STRINGS NONE OPENACC OPENMP)
 
@@ -66,7 +67,7 @@ elseif(OFFLOAD_MODEL STREQUAL "OPENMP")
 
 endif()
 
-# -- Compilerrs configuration ----------------------------------------------------------------------
+# -- Compilers configuration -----------------------------------------------------------------------
 
 if(CMAKE_Fortran_COMPILER_ID STREQUAL "NVHPC")
 
@@ -89,5 +90,34 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL "NVHPC")
 
   target_compile_options(test_bitrep PRIVATE ${NVHPC_FLAGS})
   target_link_options(test_bitrep PRIVATE ${NVHPC_FLAGS})
+
+elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "Flang" AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+
+  set(AMD_FLAGS
+    -ffp-contract=off
+    -fno-fast-math
+    -fno-unsafe-math-optimizations
+    -fno-reciprocal-math
+  )
+
+  if(OFFLOAD_MODEL STREQUAL "OPENMP")
+    list(APPEND AMD_FLAGS -fopenmp -fopenmp-targets=amdgcn-amd-amdhsa)
+
+    if(AMD_GPU_ARCH)
+      list(APPEND AMD_FLAGS
+        -Xopenmp-target=amdgcn-amd-amdhsa
+        -march=${AMD_GPU_ARCH}
+      )
+    endif()
+
+  endif()
+
+  target_compile_options(bitrep PRIVATE
+    $<$<COMPILE_LANGUAGE:Fortran>:${AMD_FLAGS}>
+    $<$<COMPILE_LANGUAGE:CXX>:${AMD_FLAGS}>
+  )
+
+  target_compile_options(test_bitrep PRIVATE ${AMD_FLAGS})
+  target_link_options(test_bitrep PRIVATE ${AMD_FLAGS})
 
 endif()
