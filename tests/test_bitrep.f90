@@ -151,8 +151,8 @@ contains
     use omp_lib, only: omp_get_num_devices
 #endif
 
-    logical, intent(out)     :: available
-    integer                  :: num_devices
+    logical, intent(out) :: available
+    integer              :: num_devices
 
 #if defined(BITREP_USE_OPENACC)
     integer(acc_device_kind) :: dev_type
@@ -167,9 +167,7 @@ contains
     else
       write (*, "(A,I0)") "[INFO] Device kind (`acc_device_kind` code): ", dev_type
     end if
-
 #elif defined(BITREP_USE_OPENMP)
-
     num_devices = omp_get_num_devices()
     available = (num_devices > 0)
 
@@ -177,7 +175,6 @@ contains
     if (.not. available) then
       write (*, "(A)") "[INFO] Device kind: host (CPU fallback, no GPU offload)"
     end if
-
 #else
     available = .false.
     write (*, "(A)") "[INFO] Built without OpenACC/OpenMP support: CPU fallback, no GPU offload"
