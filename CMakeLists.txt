@@ -11,10 +11,12 @@ set_property(CACHE OFFLOAD_MODEL PROPERTY STRINGS NONE OPENACC OPENMP)
 
 # -- Library ---------------------------------------------------------------------------------------
 
-add_library(bitrep STATIC
+set(BR_SOURCES
   src/br_interface.f90
   src/br_transcendentals.cpp
 )
+
+add_library(bitrep STATIC ${BR_SOURCES})
 
 set_source_files_properties(src/br_interface.f90 PROPERTIES Fortran_PREPROCESS ON)
 
@@ -38,8 +40,7 @@ if(BUILD_TESTINGS)
 
   add_executable(test_bitrep
     tests/test_bitrep.f90
-    src/br_transcendentals.cpp
-    src/br_interface.f90
+    ${BR_SOURCES}
   )
   set_source_files_properties(tests/test_bitrep.f90 PROPERTIES Fortran_PREPROCESS ON)
   set_target_properties(test_bitrep PROPERTIES LINKER_LANGUAGE Fortran)
@@ -76,6 +77,12 @@ endif()
 if(CMAKE_Fortran_COMPILER_ID STREQUAL "NVHPC")
 
   set(NVHPC_FLAGS -Kieee -Mnofma)
+
+  if(OFFLOAD_MODEL STREQUAL "OPENACC")
+    list(APPEND NVHPC_FLAGS "-acc=gpu")
+    list(APPEND NVHPC_FLAGS "-Minfo=all")
+  endif()
+
 
   if(OFFLOAD_MODEL STREQUAL "OPENMP")
     list(APPEND NVHPC_FLAGS "-mp=gpu")
