@@ -84,10 +84,11 @@ Accelerator Kernel Timing data
 
 > [!NOTE]
 > `bitrep` can be built as a static library with the CMake build system.
-> However, it's probably easier to copy the two source files (see `./src`) in your project.
+> However, it's probably easier to copy the two source files (see [`./src`](./src)) in your project.
 
 The following will build a static library `libbitrep.a` and a test binary that will test
-if identical result are obtained both on the CPU and the GPU (see `./tests/test_bitrep.f90`).
+if identical result are obtained both on the CPU and the GPU
+(see [`./tests/test_bitrep.f90`](./tests/test_bitrep.f90)).
 
 ```bash
 cmake -B build -S . -DCMAKE_VERBOSE_MAKEFILE=ON -DOFFLOAD_MODEL=OPENACC # -DCUDA_CC=cc70
