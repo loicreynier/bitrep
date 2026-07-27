@@ -47,7 +47,16 @@ if(BUILD_TESTINGS)
   target_include_directories(test_bitrep PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/mod)
   # target_link_libraries(test_bitrep PRIVATE bitrep)
 
+  add_executable(test_perf
+    tests/test_perf.f90
+    ${BR_SOURCES}
+  )
+  set_source_files_properties(tests/test_perf.f90 PROPERTIES Fortran_PREPROCESS ON)
+  set_target_properties(test_perf PROPERTIES LINKER_LANGUAGE Fortran)
+  target_include_directories(test_perf PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/mod)
+
   add_test(NAME bitrep_test COMMAND test_bitrep)
+  add_test(NAME bitrep_benchmark COMMAND test_perf)
 endif()
 
 # -- Offload model ---------------------------------------------------------------------------------
@@ -60,6 +69,7 @@ if(OFFLOAD_MODEL STREQUAL "OPENACC")
   )
   target_compile_definitions(bitrep PRIVATE BITREP_USE_OPENACC)
   target_compile_definitions(test_bitrep PRIVATE BITREP_USE_OPENACC)
+  target_compile_definitions(test_perf PRIVATE BITREP_USE_OPENACC)
 
 elseif(OFFLOAD_MODEL STREQUAL "OPENMP")
 
@@ -69,6 +79,7 @@ elseif(OFFLOAD_MODEL STREQUAL "OPENMP")
   )
   target_compile_definitions(bitrep PRIVATE BITREP_USE_OPENMP)
   target_compile_definitions(test_bitrep PRIVATE BITREP_USE_OPENMP)
+  target_compile_definitions(test_perf PRIVATE BITREP_USE_OPENMP)
 
 endif()
 
@@ -101,6 +112,8 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL "NVHPC")
 
   target_compile_options(test_bitrep PRIVATE ${NVHPC_FLAGS})
   target_link_options(test_bitrep PRIVATE ${NVHPC_FLAGS})
+  target_compile_options(test_perf PRIVATE ${NVHPC_FLAGS})
+  target_link_options(test_perf PRIVATE ${NVHPC_FLAGS})
 
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "Flang" AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
@@ -130,5 +143,7 @@ elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "Flang" AND CMAKE_CXX_COMPILER_ID STRE
 
   target_compile_options(test_bitrep PRIVATE ${AMD_FLAGS})
   target_link_options(test_bitrep PRIVATE ${AMD_FLAGS})
+  target_compile_options(test_perf PRIVATE ${AMD_FLAGS})
+  target_link_options(test_perf PRIVATE ${AMD_FLAGS})
 
 endif()

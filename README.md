@@ -20,6 +20,66 @@ Bit-reproductible results have been tested on:
 [Kairos]: https://www.calmip.univ-toulouse.fr/espace-utilisateurs/documentation-technique-kairos
 [Adastra]: https://dci.dci-gitlab.cines.fr/webextranet/index.html
 
+## Benchmark
+
+On a transcendental-heavy kernel `sin + cos + exp + log + atan` per point
+(see [`./tests/test_perf.f90`](./tests/test_perf.f90)),
+the cost to pay for bit-reproducibility seems to be a **~3.5 to 4.5× slowdown** (NVHPC, 25+).
+
+<details><summary>Benchmark result on Kairos, NVIDIA HPC SDK 26.1</summary>
+
+```console
+[reynier@kairosgh0 bitrep]$ ./build/test_perf
+[INFO] Number of OpenACC devices detected: 1
+[INFO] Device kind (`acc_device_kind` code): 4
+libcupti.so not found
+--------------------------------------------------
+Native  :        0.016 ms
+Bitrep  :        0.073 ms
+Overhead:         4.56x
+
+Accelerator Kernel Timing data
+/users/p18043/reynier/code/hpc/bitrep/tests/test_perf.f90
+  test_perf  NVIDIA  devicenum=0
+    time(us): 56
+    30: data region reached 2 times
+        30: data copyin transfers: 1
+             device time(us): total=56 max=56 min=56 avg=56
+/users/p18043/reynier/code/hpc/bitrep/tests/test_perf.f90
+  run_native  NVIDIA  devicenum=0
+    time(us): 0
+    75: compute region reached 23 times
+        75: kernel launched 23 times
+            grid: [7813]  block: [128]
+            elapsed time(us): total=382 max=40 min=15 avg=16
+    75: data region reached 46 times
+/users/p18043/reynier/code/hpc/bitrep/tests/test_perf.f90
+  run_bitrep  NVIDIA  devicenum=0
+    time(us): 0
+    89: compute region reached 23 times
+        89: kernel launched 23 times
+            grid: [7813]  block: [128]
+            elapsed time(us): total=1,655 max=74 min=70 avg=71
+    89: data region reached 46 times
+/users/p18043/reynier/code/hpc/bitrep/tests/test_perf.f90
+  anti_dce_kernel  NVIDIA  devicenum=0
+    time(us): 19
+    103: compute region reached 1 time
+        103: kernel launched 1 time
+            grid: [7813]  block: [128]
+            elapsed time(us): total=17 max=17 min=17 avg=17
+        103: reduction kernel launched 1 time
+            grid: [1]  block: [256]
+            elapsed time(us): total=17 max=17 min=17 avg=17
+    103: data region reached 4 times
+        103: data copyin transfers: 1
+             device time(us): total=3 max=3 min=3 avg=3
+        112: data copyout transfers: 1
+             device time(us): total=16 max=16 min=16 avg=16
+
+```
+</details>
+
 ## Build instructions
 
 > [!NOTE]
