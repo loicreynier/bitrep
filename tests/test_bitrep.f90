@@ -127,7 +127,7 @@ program test_bitrep
   end if
 
   if (.not. all_identical) then
-    write (*, "(A)") "FAILED: at least one GPU/CPU bit-reproductibility check did not pass"
+    write (*, "(A)") "FAILED: at least one GPU/CPU bit-reproducibility check did not pass"
     error stop 1
   end if
 

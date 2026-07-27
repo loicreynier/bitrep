@@ -1,19 +1,19 @@
-# `bitrep` - Bit-reproductible math functions
+# `bitrep` - Bit-reproducible math functions
 
 [Original source by Andrea Arteaga](https://github.com/andyspiros/bitrep),
 ported to GPU through OpenACC or OpenMP and with a Fortran interface.
 
-Bit-reproductible results have been tested on:
+Bit-reproducible results have been tested on:
 
 - CPU x86 Intel vs GPU NVIDIA V100 @ [Olympe (CALMIP)][Olympe]:
   - OpenACC & PGI 19.10 compiler
   - OpenACC & NVIDIA HPC SDK 22.7 compiler
 - CPU ARM vs GPU NVIDIA A100 @ [Turpan (CALMIP)][Turpan]:
-    OpenACC/OpenMP & NVIDIA HPC SDK 25.3 compiler
+  - OpenACC/OpenMP & NVIDIA HPC SDK 25.3 compiler
 - NVIDIA GH200 superchip @ [Kairos (CALMIP)][Kairos]:
-    OpenACC/OpenMP NVIDIA HPC SDK 26.1 compiler
+  - OpenACC/OpenMP & NVIDIA HPC SDK 26.1 compiler
 - CPU AMD vs GPU AMD MI250X @ [Adastra (CINES)][Adastra]:
-    OpenMP & AMD Flang 19.0 compiler
+  - OpenMP & AMD Flang 19.0 compiler
 
 [Olympe]: https://www.calmip.univ-toulouse.fr/espace-utilisateurs/doc-technique-olympe
 [Turpan]: https://www.calmip.univ-toulouse.fr/espace-utilisateurs/doc-technique-turpan
@@ -84,7 +84,7 @@ Accelerator Kernel Timing data
 
 > [!NOTE]
 > `bitrep` can be built as a static library with the CMake build system.
-> However it's probably easier to copy the two source files (see `./src`) in your project.
+> However, it's probably easier to copy the two source files (see `./src`) in your project.
 
 The following will build a static library `libbitrep.a` and a test binary that will test
 if identical result are obtained both on the CPU and the GPU (see `./tests/test_bitrep.f90`).
@@ -110,7 +110,7 @@ cd build
 On NVHPC, specifying the CUDA compute capability with `-DCUDA_CC=<cc>` (e.g. `cc70` for Volta GPUs)
 may be necessary when building fails to generate code for all capabilities.
 
-On AMD's OpenMP, target achitecture must be specified with `-DAMD_GPU_ARCH=<arch>`
+On AMD's OpenMP, target architecture must be specified with `-DAMD_GPU_ARCH=<arch>`
 (e.g. `gfx90a` for MI250X).
 
 ## Other implementations
@@ -121,7 +121,7 @@ On AMD's OpenMP, target achitecture must be specified with `-DAMD_GPU_ARCH=<arch
 ## Reference
 
 ```bibtex
-@inproceedings{Arteaga2014bitrep,
+@inproceedings{Arteaga2014Bitrep,
   author = {Arteaga, Andrea and Fuhrer, Oliver and Hoefler, Torsten},
   booktitle = {2014 IEEE 28th International Parallel and Distributed Processing Symposium},
   title = {Designing Bit-Reproducible Portable High-Performance Applications},
