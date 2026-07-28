@@ -3,7 +3,7 @@
  * All rights reserved.
  *
  * This file is a modified version of the original source code by Andrea Arteaga.
- * The modifications in this version add OpenACC support to the BITREP routines.
+ * The modifications in this version add OpenACC/OpenMP support to the BITREP routines.
  *
  * This source file is distributed under the terms of the BSD3-Clause License.
  * See the LICENSE file for details.
