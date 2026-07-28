@@ -24,6 +24,20 @@
 #define __BITREPFMA(a, b, c) (a * b + c)
 #endif
 
+#ifdef __CUDA_ARCH__
+#define __BITREPINFINITY INFINITY
+#define __BITREPQUIETNAN std::numeric_limits<double>::quiet_NaN()
+#else
+#define __BITREPINFINITY std::numeric_limits<double>::infinity()
+#define __BITREPQUIETNAN std::numeric_limits<double>::quiet_NaN()
+#endif
+
+#ifdef __CUDA_ARCH__
+#define __BITREPFUN __host__ __device__
+#else
+#define __BITREPFUN
+#endif
+
 namespace bitrep {
 
 /*************
@@ -56,10 +70,10 @@ static const double __sin_cos_coefficient[16] = {
  * FORWARD DECLARATION OF SOME FUNCTIONS *
  *****************************************/
 
-double __internal_exp_kernel(double x, int scale);
-double __internal_expm1_kernel(double x);
-double log1p(double);
-double log(double);
+__BITREPFUN double __internal_exp_kernel(double x, int scale);
+__BITREPFUN double __internal_expm1_kernel(double x);
+__BITREPFUN double log1p(double);
+__BITREPFUN double log(double);
 
 #pragma omp declare target
 
@@ -68,7 +82,7 @@ double log(double);
  ********************/
 
 #pragma acc routine seq
-double __internal_copysign_pos(double a, double b) {
+__BITREPFUN double __internal_copysign_pos(double a, double b) {
   union {
     int32_t i[2];
     double d;
@@ -80,7 +94,7 @@ double __internal_copysign_pos(double a, double b) {
 }
 
 #pragma acc routine seq
-double __internal_old_exp_kernel(double x, int scale) {
+__BITREPFUN double __internal_old_exp_kernel(double x, int scale) {
   double t, z;
   int i, j, k;
 
@@ -131,7 +145,7 @@ double __internal_old_exp_kernel(double x, int scale) {
  * \param q Represents the quadrant as integer
  */
 #pragma acc routine seq
-static double __internal_sin_cos_kerneld(double x, int q)
+__BITREPFUN static double __internal_sin_cos_kerneld(double x, int q)
 
 {
   const double __sin_cos_coefficient[16] = {
@@ -177,7 +191,7 @@ static double __internal_sin_cos_kerneld(double x, int q)
 }
 
 #pragma acc routine seq
-double __internal_tan_kernel(double x, int i) {
+__BITREPFUN double __internal_tan_kernel(double x, int i) {
   double x2, z, q;
   x2 = x * x;
   z = 9.8006287203286300E-006;
@@ -211,7 +225,7 @@ double __internal_tan_kernel(double x, int i) {
 }
 
 #pragma acc routine seq
-static double __internal_trig_reduction_kerneld(double x, int *q_) {
+__BITREPFUN static double __internal_trig_reduction_kerneld(double x, int *q_) {
   double j, t;
   int &q = *q_;
 
@@ -229,7 +243,7 @@ static double __internal_trig_reduction_kerneld(double x, int *q_) {
 }
 
 #pragma acc routine seq
-double sin(double x) {
+__BITREPFUN double sin(double x) {
   double z;
   int q;
 
@@ -242,7 +256,7 @@ double sin(double x) {
 }
 
 #pragma acc routine seq
-double cos(double x) {
+__BITREPFUN double cos(double x) {
   double z;
   int q;
 
@@ -256,8 +270,8 @@ double cos(double x) {
 }
 
 #pragma acc routine seq
-double tan(double x) {
-  double z, inf = std::numeric_limits<double>::infinity();
+__BITREPFUN double tan(double x) {
+  double z, inf = __BITREPINFINITY;
   int i;
 
   if (x == inf || x == -inf) {
@@ -273,7 +287,7 @@ double tan(double x) {
  ***********************************/
 
 #pragma acc routine seq
-double __internal_asin_kernel(double x) {
+__BITREPFUN double __internal_asin_kernel(double x) {
   double r;
   r = 6.259798167646803E-002;
   r = __BITREPFMA(r, x, -7.620591484676952E-002);
@@ -293,7 +307,7 @@ double __internal_asin_kernel(double x) {
 }
 
 #pragma acc routine seq
-double __internal_atan_kernel(double x) {
+__BITREPFUN double __internal_atan_kernel(double x) {
   double t, x2;
   x2 = x * x;
   t = -2.0258553044438358E-005;
@@ -321,7 +335,7 @@ double __internal_atan_kernel(double x) {
 }
 
 #pragma acc routine seq
-double asin(double x) {
+__BITREPFUN double asin(double x) {
   double fx, t0, t1;
   double xhi, ihi;
 
@@ -358,7 +372,7 @@ double asin(double x) {
 }
 
 #pragma acc routine seq
-double acos(double x) {
+__BITREPFUN double acos(double x) {
   double t0, t1;
 
   union {
@@ -408,7 +422,7 @@ double acos(double x) {
       t0 = __BITREPFMA(r, y, p);
     }
     if (ihi < 0) {
-      t0 = t0 * std::numeric_limits<double>::infinity();
+      t0 = t0 * __BITREPINFINITY;
     }
     if (xhi < 0) {
       t0 = t0 - 1.2246467991473532e-16;
@@ -419,14 +433,14 @@ double acos(double x) {
 }
 
 #pragma acc routine seq
-double atan(double x) {
+__BITREPFUN double atan(double x) {
   double t0, t1;
   /* reduce argument to first octant */
   t0 = std::abs(x);
   t1 = t0;
   if (t0 > 1.0) {
     t1 = 1. / t1;
-    if (t0 == std::numeric_limits<double>::infinity())
+    if (t0 == __BITREPINFINITY)
       t1 = 0.0;
   }
 
@@ -445,7 +459,7 @@ double atan(double x) {
  ************************/
 
 #pragma acc routine seq
-double __internal_expm1_kernel(double x) {
+__BITREPFUN double __internal_expm1_kernel(double x) {
   double t;
   t = 2.0900320002536536E-009;
   t = __BITREPFMA(t, x, 2.5118162590908232E-008);
@@ -464,7 +478,7 @@ double __internal_expm1_kernel(double x) {
 }
 
 #pragma acc routine seq
-double __internal_exp2i_kernel(int32_t b) {
+__BITREPFUN double __internal_exp2i_kernel(int32_t b) {
   union {
     int32_t i[2];
     double d;
@@ -477,7 +491,7 @@ double __internal_exp2i_kernel(int32_t b) {
 }
 
 #pragma acc routine seq
-double __internal_expm1_scaled(double x, int scale) {
+__BITREPFUN double __internal_expm1_scaled(double x, int scale) {
   double t, z, u;
   int i, j;
 
@@ -517,7 +531,7 @@ double __internal_expm1_scaled(double x, int scale) {
 }
 
 #pragma acc routine seq
-double sinh(double x) {
+__BITREPFUN double sinh(double x) {
   double z;
 
   union {
@@ -546,7 +560,7 @@ double sinh(double x) {
     z = __internal_expm1_scaled(t, -1);
     z = z + z / (__BITREPFMA(2.0, z, 1.0));
     if (t >= 7.1047586007394398e+2) {
-      z = std::numeric_limits<double>::infinity();
+      z = __BITREPINFINITY;
     }
   }
 
@@ -555,7 +569,7 @@ double sinh(double x) {
 }
 
 #pragma acc routine seq
-double cosh(double x) {
+__BITREPFUN double cosh(double x) {
   double t, z;
   z = std::abs(x);
 
@@ -573,7 +587,7 @@ double cosh(double x) {
     z = __BITREPFMA(2.0, z, 0.125 * t);
   } else {
     if (z > 0.0)
-      x = std::numeric_limits<double>::infinity();
+      x = __BITREPINFINITY;
     z = x + x;
   }
 
@@ -581,7 +595,7 @@ double cosh(double x) {
 }
 
 #pragma acc routine seq
-double tanh(double x) {
+__BITREPFUN double tanh(double x) {
   double t;
   t = std::abs(x);
   if (t >= 0.55) {
@@ -617,7 +631,7 @@ double tanh(double x) {
  ********************************/
 
 #pragma acc routine seq
-double __internal_atanh_kernel(double a_1, double a_2) {
+__BITREPFUN double __internal_atanh_kernel(double a_1, double a_2) {
   double a, a2, t;
 
   a = a_1 + a_2;
@@ -637,7 +651,7 @@ double __internal_atanh_kernel(double a_1, double a_2) {
 }
 
 #pragma acc routine seq
-double asinh(double x) {
+__BITREPFUN double asinh(double x) {
   double fx, t;
   fx = std::abs(x);
 
@@ -657,7 +671,7 @@ double asinh(double x) {
 }
 
 #pragma acc routine seq
-double acosh(double x) {
+__BITREPFUN double acosh(double x) {
   double t;
   t = x - 1.0;
   if (std::abs(t) > 4503599627370496.0) {
@@ -670,7 +684,7 @@ double acosh(double x) {
   return t;
 }
 
-double atanh(double x) {
+__BITREPFUN double atanh(double x) {
   double fx, t;
   fx = std::abs(x);
 
@@ -693,7 +707,7 @@ double atanh(double x) {
  **************/
 
 #pragma acc routine seq
-double log(double x) {
+__BITREPFUN double log(double x) {
   double m, f, g, u, v, tmp, q, ulo, log_lo, log_hi;
   int32_t ihi, ilo;
 
@@ -706,7 +720,7 @@ double log(double x) {
   ihi = xx.i[1];
   ilo = xx.i[0];
 
-  if ((x > 0.) && (x < std::numeric_limits<double>::infinity())) {
+  if ((x > 0.) && (x < __BITREPINFINITY)) {
     int32_t e = -1023;
 
     // Normalize denormals
@@ -761,18 +775,18 @@ double log(double x) {
   } else if (x != x) {
     q = x + x;
   } else if (x == 0.) {
-    q = -std::numeric_limits<double>::infinity();
-  } else if (x == std::numeric_limits<double>::infinity()) {
+    q = -__BITREPINFINITY;
+  } else if (x == __BITREPINFINITY) {
     q = x;
   } else {
-    q = std::numeric_limits<double>::quiet_NaN();
+    q = __BITREPQUIETNAN;
   }
 
   return q;
 }
 
 #pragma acc routine seq
-double log1p(double x) {
+__BITREPFUN double log1p(double x) {
   double t;
   union {
     int32_t i[2];
@@ -794,7 +808,7 @@ double log1p(double x) {
 }
 
 #pragma acc routine seq
-double __internal_exp_poly(double x) {
+__BITREPFUN double __internal_exp_poly(double x) {
   double t;
 
   t = 2.5052097064908941E-008;
@@ -813,7 +827,7 @@ double __internal_exp_poly(double x) {
 }
 
 #pragma acc routine seq
-double __internal_exp_scale(double x, int i) {
+__BITREPFUN double __internal_exp_scale(double x, int i) {
   unsigned int j, k;
 
   union {
@@ -841,7 +855,7 @@ double __internal_exp_scale(double x, int i) {
 }
 
 #pragma acc routine seq
-double __internal_exp_kernel(double x, int scale) {
+__BITREPFUN double __internal_exp_kernel(double x, int scale) {
   double t, z;
   int i;
 
@@ -863,7 +877,7 @@ double __internal_exp_kernel(double x, int scale) {
 }
 
 #pragma acc routine seq
-double exp(double x) {
+__BITREPFUN double exp(double x) {
   double t;
   int i;
 
@@ -878,7 +892,7 @@ double exp(double x) {
   if (((unsigned)i < 0x40862e43) || (i < (int)0xC0874911)) {
     t = __internal_exp_kernel(x, 0);
   } else {
-    t = (i < 0) ? 0 : std::numeric_limits<double>::infinity();
+    t = (i < 0) ? 0 : __BITREPINFINITY;
     if (!(x == x)) {
       t = x + x;
     }
@@ -894,34 +908,34 @@ double exp(double x) {
 extern "C" {
 #pragma omp declare target
 #pragma acc routine seq
-double br_sin(double x) { return bitrep::sin(x); }
+__BITREPFUN double br_sin(double x) { return bitrep::sin(x); }
 #pragma acc routine seq
-double br_cos(double x) { return bitrep::cos(x); }
+__BITREPFUN double br_cos(double x) { return bitrep::cos(x); }
 #pragma acc routine seq
-double br_tan(double x) { return bitrep::tan(x); }
+__BITREPFUN double br_tan(double x) { return bitrep::tan(x); }
 #pragma acc routine seq
-double br_asin(double x) { return bitrep::asin(x); }
+__BITREPFUN double br_asin(double x) { return bitrep::asin(x); }
 #pragma acc routine seq
-double br_acos(double x) { return bitrep::acos(x); }
+__BITREPFUN double br_acos(double x) { return bitrep::acos(x); }
 #pragma acc routine seq
-double br_atan(double x) { return bitrep::atan(x); }
+__BITREPFUN double br_atan(double x) { return bitrep::atan(x); }
 #pragma acc routine seq
-double br_sinh(double x) { return bitrep::sinh(x); }
+__BITREPFUN double br_sinh(double x) { return bitrep::sinh(x); }
 #pragma acc routine seq
-double br_cosh(double x) { return bitrep::cosh(x); }
+__BITREPFUN double br_cosh(double x) { return bitrep::cosh(x); }
 #pragma acc routine seq
-double br_tanh(double x) { return bitrep::tanh(x); }
+__BITREPFUN double br_tanh(double x) { return bitrep::tanh(x); }
 #pragma acc routine seq
-double br_asinh(double x) { return bitrep::asinh(x); }
+__BITREPFUN double br_asinh(double x) { return bitrep::asinh(x); }
 #pragma acc routine seq
-double br_acosh(double x) { return bitrep::acosh(x); }
+__BITREPFUN double br_acosh(double x) { return bitrep::acosh(x); }
 #pragma acc routine seq
-double br_atanh(double x) { return bitrep::atanh(x); }
+__BITREPFUN double br_atanh(double x) { return bitrep::atanh(x); }
 #pragma acc routine seq
-double br_log(double x) { return bitrep::log(x); }
+__BITREPFUN double br_log(double x) { return bitrep::log(x); }
 #pragma acc routine seq
-double br_log1p(double x) { return bitrep::log1p(x); }
+__BITREPFUN double br_log1p(double x) { return bitrep::log1p(x); }
 #pragma acc routine seq
-double br_exp(double x) { return bitrep::exp(x); }
+__BITREPFUN double br_exp(double x) { return bitrep::exp(x); }
 #pragma omp end declare target
 }
