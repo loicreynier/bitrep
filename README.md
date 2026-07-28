@@ -118,6 +118,7 @@ On AMD's OpenMP, target architecture must be specified with `-DAMD_GPU_ARCH=<arc
 
 - [Original source by Andrea Arteaga](https://github.com/andyspiros/bitrep)
 - [GPU OpenACC port of transcendental functions by Philippe Wautelet](https://github.com/pmarguinaud/bitrep)
+- [@qingu's fork of Philippe Wautelet's with added Gamma and `loggamma`](https://github.com/qingu/bitrep)
 
 ## Reference
 
