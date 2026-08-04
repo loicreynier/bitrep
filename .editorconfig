@@ -13,5 +13,11 @@ max_line_length = 100
 [*.md]
 indent_size = unset
 
+[*.cpp]
+max_line_length = 120
+
 [*.f90]
+max_line_length = 120
+
+[*.cu]
 max_line_length = 120
