@@ -2,11 +2,11 @@
 #include <math.h>
 #include <stdio.h>
 
-#define CUDA_CHECK(expr_to_check)                                                                                      \
+#define CUDA_CHECK(call)                                                                                               \
   do {                                                                                                                 \
-    cudaError_t result = expr_to_check;                                                                                \
-    if (result != cudaSuccess) {                                                                                       \
-      fprintf(stderr, "CUDA Runtime Error: %s:%i:%d = %s\n", __FILE__, __LINE__, result, cudaGetErrorString(result));  \
+    cudaError_t err = (call);                                                                                          \
+    if (err != cudaSuccess) {                                                                                          \
+      fprintf(stderr, "CUDA Runtime Error: %s:%i:%d = %s\n", __FILE__, __LINE__, call, cudaGetErrorString(err));       \
     }                                                                                                                  \
   } while (0)
 

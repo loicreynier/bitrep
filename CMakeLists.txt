@@ -21,6 +21,80 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL "NVHPC")
   endif()
 endif()
 
+if(HAS_CUDA)
+  if(CUDA_CC)
+    set(CMAKE_CUDA_ARCHITECTURES ${CUDA_CC})
+  else()
+    set(CMAKE_CUDA_ARCHITECTURES "all")
+  endif()
+endif()
+
+# -- Compilers configuration -----------------------------------------------------------------------
+
+if(CMAKE_Fortran_COMPILER_ID STREQUAL "NVHPC")
+
+  set(NVHPC_FLAGS)
+
+  if(OFFLOAD_MODEL STREQUAL "OPENACC")
+    list(APPEND NVHPC_FLAGS "-acc=gpu")
+    list(APPEND NVHPC_FLAGS "-Minfo=all")
+  endif()
+
+
+  if(OFFLOAD_MODEL STREQUAL "OPENMP")
+    list(APPEND NVHPC_FLAGS "-mp=gpu")
+    list(APPEND NVHPC_FLAGS "-Minfo=all")
+  endif()
+
+  if(CUDA_CC)
+    list(APPEND NVHPC_FLAGS "-gpu=cc${CUDA_CC}")
+  else()
+  endif()
+
+  add_compile_options(
+    "$<$<COMPILE_LANGUAGE:Fortran>:${NVHPC_FLAGS}>"
+    "$<$<COMPILE_LANGUAGE:CXX>:${NVHPC_FLAGS}>"
+    $<$<COMPILE_LANGUAGE:CUDA>:-fmad=false>
+    $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>
+  )
+
+  add_link_options(
+    "$<$<COMPILE_LANGUAGE:Fortran>:${NVHPC_FLAGS}>"
+    "$<$<COMPILE_LANGUAGE:CXX>:${NVHPC_FLAGS}>"
+  )
+
+elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "Flang" AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+
+  set(AMD_FLAGS
+    -ffp-contract=off
+    -fno-fast-math
+    -fno-unsafe-math-optimizations
+    -fno-reciprocal-math
+  )
+
+  if(OFFLOAD_MODEL STREQUAL "OPENMP")
+    list(APPEND AMD_FLAGS -fopenmp -fopenmp-targets=amdgcn-amd-amdhsa)
+    if(AMD_GPU_ARCH)
+      list(APPEND AMD_FLAGS
+        -Xopenmp-target=amdgcn-amd-amdhsa
+        -march=${AMD_GPU_ARCH}
+      )
+    endif()
+  endif()
+
+  add_compile_options(
+    "$<$<COMPILE_LANGUAGE:Fortran>:${NVHPC_FLAGS}>"
+    "$<$<COMPILE_LANGUAGE:CXX>:${NVHPC_FLAGS}>"
+    $<$<COMPILE_LANGUAGE:CUDA>:-fmad=false>
+  )
+
+  add_link_options(
+    "$<$<COMPILE_LANGUAGE:Fortran>:${NVHPC_FLAGS}>"
+    "$<$<COMPILE_LANGUAGE:CXX>:${NVHPC_FLAGS}>"
+  )
+
+endif()
+
 # -- Library ---------------------------------------------------------------------------------------
 
 set(BR_SOURCES
@@ -74,21 +148,23 @@ if(BUILD_TESTINGS)
       tests/test_perf_cuda.cu
       src/br_transcendentals.cu
     )
-    if(CUDA_CC)
-      set_target_properties(test_perf_cuda PROPERTIES CUDA_ARCHITECTURES ${CUDA_CC})
-    else()
-      set_target_properties(test_perf_cuda PROPERTIES CUDA_ARCHITECTURES "all")
-    endif()
     set_target_properties(test_perf_cuda PROPERTIES
       LINKER_LANGUAGE CUDA
       CUDA_SEPARABLE_COMPILATION  ON
     )
-    target_compile_options(test_perf_cuda PRIVATE
-      $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>
-    )
     add_test(NAME bitrep_benchmark_cuda COMMAND test_perf_cuda)
+
+    add_executable(test_bitrep_cuda
+      tests/test_bitrep_cuda.cu
+      src/br_transcendentals.cu
+    )
+    set_target_properties(test_bitrep_cuda PROPERTIES
+      LINKER_LANGUAGE CUDA
+      CUDA_SEPARABLE_COMPILATION  ON
+    )
+    add_test(NAME bitrep_test_cuda COMMAND test_bitrep_cuda)
   else()
-    message(STATUS "Skipping test_perf_cuda: requires NVHPC compiler with CUDA support")
+    message(STATUS "Skipping CUDA tests: requires NVHPC compiler with CUDA support")
   endif()
 
 endif()
@@ -116,67 +192,3 @@ elseif(OFFLOAD_MODEL STREQUAL "OPENMP")
 
 endif()
 
-# -- Compilers configuration -----------------------------------------------------------------------
-
-if(CMAKE_Fortran_COMPILER_ID STREQUAL "NVHPC")
-
-  set(NVHPC_FLAGS -Kieee -Mnofma)
-
-  if(OFFLOAD_MODEL STREQUAL "OPENACC")
-    list(APPEND NVHPC_FLAGS "-acc=gpu")
-    list(APPEND NVHPC_FLAGS "-Minfo=all")
-  endif()
-
-
-  if(OFFLOAD_MODEL STREQUAL "OPENMP")
-    list(APPEND NVHPC_FLAGS "-mp=gpu")
-    list(APPEND NVHPC_FLAGS "-Minfo=all")
-  endif()
-
-  if(CUDA_CC)
-    list(APPEND NVHPC_FLAGS "-gpu=cc${CUDA_CC}")
-  else()
-  endif()
-
-  target_compile_options(bitrep PRIVATE
-    $<$<COMPILE_LANGUAGE:Fortran>:${NVHPC_FLAGS}>
-    $<$<COMPILE_LANGUAGE:CXX>:${NVHPC_FLAGS}>
-  )
-
-  target_compile_options(test_bitrep PRIVATE ${NVHPC_FLAGS})
-  target_link_options(test_bitrep PRIVATE ${NVHPC_FLAGS})
-  target_compile_options(test_perf PRIVATE ${NVHPC_FLAGS})
-  target_link_options(test_perf PRIVATE ${NVHPC_FLAGS})
-
-elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "Flang" AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-
-  set(AMD_FLAGS
-    -ffp-contract=off
-    -fno-fast-math
-    -fno-unsafe-math-optimizations
-    -fno-reciprocal-math
-  )
-
-  if(OFFLOAD_MODEL STREQUAL "OPENMP")
-    list(APPEND AMD_FLAGS -fopenmp -fopenmp-targets=amdgcn-amd-amdhsa)
-
-    if(AMD_GPU_ARCH)
-      list(APPEND AMD_FLAGS
-        -Xopenmp-target=amdgcn-amd-amdhsa
-        -march=${AMD_GPU_ARCH}
-      )
-    endif()
-
-  endif()
-
-  target_compile_options(bitrep PRIVATE
-    $<$<COMPILE_LANGUAGE:Fortran>:${AMD_FLAGS}>
-    $<$<COMPILE_LANGUAGE:CXX>:${AMD_FLAGS}>
-  )
-
-  target_compile_options(test_bitrep PRIVATE ${AMD_FLAGS})
-  target_link_options(test_bitrep PRIVATE ${AMD_FLAGS})
-  target_compile_options(test_perf PRIVATE ${AMD_FLAGS})
-  target_link_options(test_perf PRIVATE ${AMD_FLAGS})
-
-endif()
