@@ -90,7 +90,7 @@ The following will build a static library `libbitrep.a` and a test binary that w
 if identical result are obtained both on the CPU and the GPU (see `./tests/test_bitrep.f90`).
 
 ```bash
-cmake -B build -S . -DCMAKE_VERBOSE_MAKEFILE=ON -DOFFLOAD_MODEL=OPENACC # -DCUDA_CC=cc70
+cmake -B build -S . -DCMAKE_VERBOSE_MAKEFILE=ON -DOFFLOAD_MODEL=OPENACC # -DCUDA_CC=70
 cd build
 ./test_bitrep
 # Or with SLURM:
@@ -107,7 +107,7 @@ cd build
 # CPU::exp         vs CPU::br_exp      are NOT identical but within tolerance
 ```
 
-On NVHPC, specifying the CUDA compute capability with `-DCUDA_CC=<cc>` (e.g. `cc70` for Volta GPUs)
+On NVHPC, specifying the CUDA compute capability with `-DCUDA_CC=<cc>` (e.g. `70` for Volta GPUs)
 may be necessary when building fails to generate code for all capabilities.
 
 On AMD's OpenMP, target architecture must be specified with `-DAMD_GPU_ARCH=<arch>`

@@ -9,6 +9,18 @@ set(AMD_GPU_ARCH "" CACHE STRING "AMD GPU architecture for OpenMP target (e.g. g
 set(OFFLOAD_MODEL "OPENACC" CACHE STRING "GPU offload model: NONE, OPENACC, OPENMP")
 set_property(CACHE OFFLOAD_MODEL PROPERTY STRINGS NONE OPENACC OPENMP)
 
+set(HAS_CUDA OFF)
+if(CMAKE_Fortran_COMPILER_ID STREQUAL "NVHPC")
+  include(CheckLanguage)
+  check_language(CUDA)
+  if(CMAKE_CUDA_COMPILER)
+    enable_language(CUDA)
+    set(HAS_CUDA ON)
+  else()
+    message(WARNING "NVHPC detected but no CUDA compiler found - test_perf_cuda will be skipped")
+  endif()
+endif()
+
 # -- Library ---------------------------------------------------------------------------------------
 
 set(BR_SOURCES
@@ -46,6 +58,7 @@ if(BUILD_TESTINGS)
   set_target_properties(test_bitrep PROPERTIES LINKER_LANGUAGE Fortran)
   target_include_directories(test_bitrep PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/mod)
   # target_link_libraries(test_bitrep PRIVATE bitrep)
+  add_test(NAME bitrep_test COMMAND test_bitrep)
 
   add_executable(test_perf
     tests/test_perf.f90
@@ -54,9 +67,30 @@ if(BUILD_TESTINGS)
   set_source_files_properties(tests/test_perf.f90 PROPERTIES Fortran_PREPROCESS ON)
   set_target_properties(test_perf PROPERTIES LINKER_LANGUAGE Fortran)
   target_include_directories(test_perf PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/mod)
-
-  add_test(NAME bitrep_test COMMAND test_bitrep)
   add_test(NAME bitrep_benchmark COMMAND test_perf)
+
+  if(HAS_CUDA)
+    add_executable(test_perf_cuda
+      tests/test_perf_cuda.cu
+      src/br_transcendentals.cu
+    )
+    if(CUDA_CC)
+      set_target_properties(test_perf_cuda PROPERTIES CUDA_ARCHITECTURES ${CUDA_CC})
+    else()
+      set_target_properties(test_perf_cuda PROPERTIES CUDA_ARCHITECTURES "all")
+    endif()
+    set_target_properties(test_perf_cuda PROPERTIES
+      LINKER_LANGUAGE CUDA
+      CUDA_SEPARABLE_COMPILATION  ON
+    )
+    target_compile_options(test_perf_cuda PRIVATE
+      $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>
+    )
+    add_test(NAME bitrep_benchmark_cuda COMMAND test_perf_cuda)
+  else()
+    message(STATUS "Skipping test_perf_cuda: requires NVHPC compiler with CUDA support")
+  endif()
+
 endif()
 
 # -- Offload model ---------------------------------------------------------------------------------
@@ -72,7 +106,6 @@ if(OFFLOAD_MODEL STREQUAL "OPENACC")
   target_compile_definitions(test_perf PRIVATE BITREP_USE_OPENACC)
 
 elseif(OFFLOAD_MODEL STREQUAL "OPENMP")
-
   find_package(OpenMP REQUIRED)
   target_link_libraries(bitrep PUBLIC
     OpenMP::OpenMP_CXX OpenMP::OpenMP_Fortran
@@ -101,7 +134,7 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL "NVHPC")
   endif()
 
   if(CUDA_CC)
-    list(APPEND NVHPC_FLAGS "-gpu=${CUDA_CC}")
+    list(APPEND NVHPC_FLAGS "-gpu=cc${CUDA_CC}")
   else()
   endif()
 
