@@ -52,8 +52,8 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL "NVHPC")
   endif()
 
   add_compile_options(
-    "$<$<COMPILE_LANGUAGE:Fortran>:${NVHPC_FLAGS}>"
-    "$<$<COMPILE_LANGUAGE:CXX>:${NVHPC_FLAGS}>"
+    "$<$<COMPILE_LANGUAGE:Fortran>:${NVHPC_FLAGS};-Kieee;-Mnofma>"
+    "$<$<COMPILE_LANGUAGE:CXX>:${NVHPC_FLAGS};-Kieee;-Mnofma>"
     $<$<COMPILE_LANGUAGE:CUDA>:-fmad=false>
     $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>
   )
