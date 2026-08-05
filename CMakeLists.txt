@@ -93,6 +93,21 @@ elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "Flang" AND CMAKE_CXX_COMPILER_ID STRE
     "$<$<COMPILE_LANGUAGE:CXX>:${NVHPC_FLAGS}>"
   )
 
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+
+  add_compile_options(
+    -fno-fast-math
+    -ffp-contract=off
+  )
+
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
+
+  add_compile_options(
+    -no-fma
+    -ffp-contract=off
+    -fp-model=strict
+  )
+
 endif()
 
 # -- Library ---------------------------------------------------------------------------------------

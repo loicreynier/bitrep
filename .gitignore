@@ -1,2 +1,3 @@
 /build/
 .ffmt_cache
+*.bin

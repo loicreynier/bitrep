@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cuda_runtime.h>
+#include <vector>
 
 #define CUDA_CHECK(call)                                                                                               \
   do {                                                                                                                 \
@@ -74,6 +75,28 @@ static bool is_gpu_available() {
   }
 
   return count > 0;
+}
+
+void dump_bits(const char *name, const double *x, const double *y, int n) {
+  char fname[512];
+  std::vector<int64_t> xbits(n);
+  std::vector<int64_t> ybits(n);
+  for (int i = 0; i < n; ++i) {
+    std::memcpy(&ybits[i], &y[i], sizeof(double));
+    std::memcpy(&xbits[i], &x[i], sizeof(double));
+  }
+
+  std::snprintf(fname, sizeof(fname), "x_%s.bin", name);
+  FILE *f = std::fopen(fname, "wb");
+  std::fwrite(&n, sizeof(int), 1, f);
+  std::fwrite(xbits.data(), sizeof(int64_t), n, f);
+  std::fclose(f);
+
+  std::snprintf(fname, sizeof(fname), "y_%s.bin", name);
+  f = std::fopen(fname, "wb");
+  std::fwrite(&n, sizeof(int), 1, f);
+  std::fwrite(ybits.data(), sizeof(int64_t), n, f);
+  std::fclose(f);
 }
 
 /// @brief Compare two double arrays for bit-level identity and numerical tolerance.
@@ -263,6 +286,14 @@ int main() {
     compare_data(y_atan_bitrep, y_atan_cpu_bitrep, N, "GPU::br_atan", "CPU::br_atan", false, true);
   }
   compare_data(y_atan_cpu_native, y_atan_cpu_bitrep, N, "CPU::atan", "CPU::br_atan");
+
+  // -- Dump data ------------------------------------------------------------------------------------------------------
+
+  dump_bits("cos", x_cos, y_cos_cpu_bitrep, N);
+  dump_bits("sin", x_sin, y_sin_cpu_bitrep, N);
+  dump_bits("exp", x_exp, y_exp_cpu_bitrep, N);
+  dump_bits("log", x_log, y_log_cpu_bitrep, N);
+  dump_bits("atan", x_atan, y_atan_cpu_bitrep, N);
 
   // -- Final status ---------------------------------------------------------------------------------------------------
 

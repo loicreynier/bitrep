@@ -121,6 +121,12 @@ program test_bitrep
   end if
   call compare_data(y_atan(:,3), y_atan(:,4), "CPU::atan", "CPU::br_atan")
 
+  call dump_bits("cos", x_cos, y_cos(:,4))
+  call dump_bits("sin", x_sin, y_sin(:,4))
+  call dump_bits("exp", x_exp, y_exp(:,4))
+  call dump_bits("log", x_log, y_log(:,4))
+  call dump_bits("atan", x_atan, y_atan(:,4))
+
   if (.not. gpu_available) then
     write (*, "(A)") "FAILED: No GPU device available"
     error stop 1
@@ -272,5 +278,32 @@ contains
     end if
 
   end subroutine compare_data
+
+  subroutine dump_bits(name, x, y)
+
+    character(len=*), intent(in) :: name
+    real(kind=dp), intent(in)    :: x(n), y(n)
+    integer(int64)               :: xbits(n), ybits(n)
+    character(len=256)           :: fname
+    integer                      :: funit
+
+    do i = 1, n
+      xbits(i) = transfer(x(i), 1_int64)
+      ybits(i) = transfer(y(i), 1_int64)
+    end do
+
+    fname = "x_" // trim(name) // ".bin"
+    open (newunit=funit, file=trim(fname), form="unformatted", access="stream", status="replace")
+    write (funit) n
+    write (funit) xbits
+    close (funit)
+
+    fname = "y_" // trim(name) // ".bin"
+    open (newunit=funit, file=trim(fname), form="unformatted", access="stream", status="replace")
+    write (funit) n
+    write (funit) ybits
+    close (funit)
+
+  end subroutine dump_bits
 
 end program test_bitrep
